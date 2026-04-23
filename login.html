@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gasto Certo — Entrar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0e0f11; --surface: #16181c; --surface2: #1e2026;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+    --text: #f0f0f0; --muted: #7a7f8a;
+    --accent: #c8f135; --accent-dim: rgba(200,241,53,0.12);
+    --red: #ff5f57; --red-dim: rgba(255,95,87,0.12);
+    --font-display: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+    --r: 12px; --r-lg: 18px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .bg-grid { position: fixed; inset: 0; z-index: 0; background-image: linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px); background-size: 48px 48px; }
+  .bg-glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 70%); top: -200px; left: -200px; z-index: 0; }
+  .container { position: relative; z-index: 1; width: 420px; max-width: 95vw; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .logo-area { text-align: center; margin-bottom: 36px; }
+  .logo-mark { width: 52px; height: 52px; background: var(--accent); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .logo-mark svg { width: 28px; height: 28px; }
+  .logo-area h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-area p { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r-lg); padding: 32px; }
+  .tabs { display: flex; background: var(--surface2); border-radius: var(--r); padding: 4px; margin-bottom: 24px; }
+  .tab { flex: 1; padding: 9px; border: none; background: none; color: var(--muted); font-family: var(--font-display); font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 9px; transition: all 0.15s; }
+  .tab.active { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
+  .security-badge { display: flex; align-items: flex-start; gap: 10px; background: rgba(200,241,53,0.05); border: 1px solid rgba(200,241,53,0.15); border-radius: var(--r); padding: 12px 14px; margin-bottom: 22px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .security-badge svg { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input { width: 100%; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--r); color: var(--text); font-family: var(--font-display); font-size: 14px; outline: none; transition: border-color 0.15s; }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+  .btn-submit { width: 100%; padding: 13px; background: var(--accent); color: #000; border: none; border-radius: var(--r); font-family: var(--font-display); font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-submit:hover { background: #d8ff4d; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .error-msg { background: var(--red-dim); border: 1px solid rgba(255,95,87,0.2); border-radius: var(--r); padding: 10px 14px; font-size: 13px; color: var(--red); margin-bottom: 16px; display: none; }
+  .success-msg { background: var(--accent-dim); border: 1px solid rgba(200,241,53,0.2); border-radius: var(--r); padding: 10px 14px; font-size: 13px; color: var(--accent); margin-bottom: 16px; display: none; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .footer-note { text-align: center; margin-top: 20px; font-size: 11px; color: var(--muted); }
+  .warn-note { background: rgba(255,174,94,0.07); border: 1px solid rgba(255,174,94,0.2); border-radius: var(--r); padding: 10px 14px; font-size: 12px; color: rgba(255,174,94,0.8); margin-top: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="container">
+  <div class="logo-area">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M10 2L3 7v10h5v-5h4v5h5V7L10 2z" fill="#000"/></svg>
+    </div>
+    <h1>Gasto Certo</h1>
+    <p>Seu controle financeiro na nuvem</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+      <button class="tab" id="tab-signup" onclick="switchTab('signup')">Criar conta</button>
+    </div>
+
+    <div class="security-badge">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Seus dados são <strong style="color:var(--accent)">criptografados no seu navegador</strong> antes de serem enviados. Nem nós — nem o Supabase — conseguimos ler seus lançamentos.</span>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+    <div id="success-msg" class="success-msg"></div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="login-email" type="email" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="login-password" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" id="btn-login" onclick="doLogin()">
+        <span id="login-label">Entrar</span>
+        <div class="spinner" id="login-spinner"></div>
+      </button>
+      <div class="warn-note">⚠️ Se esquecer sua senha, seus dados criptografados não poderão ser recuperados. Guarde-a bem.</div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="form-signup" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" id="signup-name" type="text" placeholder="Seu nome">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input class="form-input" id="signup-email" type="email" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="signup-password" type="password" placeholder="mínimo 8 caracteres">
+      </div>
+      <button class="btn-submit" id="btn-signup" onclick="doSignup()">
+        <span id="signup-label">Criar conta</span>
+        <div class="spinner" id="signup-spinner"></div>
+      </button>
+      <div class="warn-note">⚠️ Sua senha é usada para gerar a chave de criptografia. Não há como recuperar os dados se ela for perdida.</div>
+    </div>
+  </div>
+
+  <p class="footer-note">🔒 AES-256-GCM · PBKDF2 · 310.000 iterações · chave nunca sai do seu dispositivo</p>
+</div>
+
+<script>
+// ============================================================
+const SUPABASE_URL    = 'https://kurzwzbortgygxsabrxa.supabase.co/rest/v1/;
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cnp3emJvcnRneWd4c2FicnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NjU4NjgsImV4cCI6MjA5MjU0MTg2OH0.mW6aObmVx88OZ0XGkAfb0PHr1t0hqzGUVR7fkDRXNiw';
+// ============================================================
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) window.location.href = 'app.html';
+});
+
+// ── Key derivation ──────────────────────────────────────────
+// Deriva AES-256-GCM key from password + email via PBKDF2.
+// A chave é exportada como raw bytes e guardada em sessionStorage
+// (sobrevive a navegação na mesma aba, some ao fechar).
+async function deriveAndStore(password, email) {
+  const enc = new TextEncoder();
+  const salt = enc.encode('gastocerto:v1:' + email.toLowerCase().trim());
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    true, ['encrypt', 'decrypt']
+  );
+  const raw = await crypto.subtle.exportKey('raw', key);
+  // Guarda como base64 na sessionStorage (memória da aba)
+  sessionStorage.setItem('gc_ek', btoa(String.fromCharCode(...new Uint8Array(raw))));
+}
+
+// ── Auth actions ────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('form-login').style.display  = tab==='login'  ? 'block' : 'none';
+  document.getElementById('form-signup').style.display = tab==='signup' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',  tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  hideMessages();
+}
+
+function showError(msg)   { const e=document.getElementById('error-msg');   e.textContent=msg; e.style.display='block'; document.getElementById('success-msg').style.display='none'; }
+function showSuccess(msg) { const e=document.getElementById('success-msg'); e.textContent=msg; e.style.display='block'; document.getElementById('error-msg').style.display='none'; }
+function hideMessages()   { document.getElementById('error-msg').style.display='none'; document.getElementById('success-msg').style.display='none'; }
+
+function setLoading(form, on) {
+  document.getElementById('btn-'+form).disabled = on;
+  document.getElementById(form+'-label').style.display   = on ? 'none'  : 'inline';
+  document.getElementById(form+'-spinner').style.display = on ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { showError('Preencha e-mail e senha.'); return; }
+  setLoading('login', true);
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { setLoading('login', false); showError(translateError(error.message)); return; }
+  // Deriva chave ANTES de navegar (precisa da senha em texto puro)
+  await deriveAndStore(password, email);
+  window.location.href = 'app.html';
+}
+
+async function doSignup() {
+  const name     = document.getElementById('signup-name').value.trim();
+  const email    = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  if (!name || !email || !password) { showError('Preencha todos os campos.'); return; }
+  if (password.length < 8) { showError('A senha precisa ter ao menos 8 caracteres.'); return; }
+  setLoading('signup', true);
+  const { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name } } });
+  setLoading('signup', false);
+  if (error) { showError(translateError(error.message)); return; }
+  showSuccess('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
+}
+
+function translateError(msg) {
+  return ({ 'Invalid login credentials':'E-mail ou senha incorretos.', 'Email not confirmed':'Confirme seu e-mail antes de entrar.', 'User already registered':'Este e-mail já está cadastrado.' })[msg] || msg;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter')
+    document.getElementById('tab-login').classList.contains('active') ? doLogin() : doSignup();
+});
+</script>
+</body>
+</html>
