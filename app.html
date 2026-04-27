@@ -102,8 +102,10 @@
   .tx-amount { font-family:var(--font-mono); font-size:14px; font-weight:500; white-space:nowrap; }
   .tx-amount.income{color:var(--accent)} .tx-amount.expense{color:var(--red)}
   .tx-delete { opacity:0; background:none; border:none; cursor:pointer; color:var(--red); padding:4px; border-radius:6px; transition:all 0.15s; display:flex; align-items:center; }
-  .tx-item:hover .tx-delete { opacity:1; }
+  .tx-edit { opacity:0; background:none; border:none; cursor:pointer; color:var(--muted); padding:4px; border-radius:6px; transition:all 0.15s; display:flex; align-items:center; }
+  .tx-item:hover .tx-delete, .tx-item:hover .tx-edit { opacity:1; }
   .tx-delete:hover { background:var(--red-dim); }
+  .tx-edit:hover { background:var(--surface2); color:var(--accent); }
 
   .cat-item { display:flex; align-items:center; gap:12px; padding:12px 22px; border-bottom:1px solid var(--border); }
   .cat-item:last-child{border-bottom:none}
@@ -292,7 +294,7 @@
 <!-- MODAL TRANSAÇÃO -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">Nova transação</span><button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-header"><span class="modal-title" id="modal-title">Nova transação</span><button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <div class="modal-body">
       <div class="type-toggle">
         <button class="type-btn expense active" id="btn-expense" onclick="setType('expense')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Gasto</button>
@@ -335,8 +337,8 @@
 
 <script>
 // ============================================================
-const SUPABASE_URL     = 'https://kurzwzbortgygxsabrxa.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cnp3emJvcnRneWd4c2FicnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NjU4NjgsImV4cCI6MjA5MjU0MTg2OH0.mW6aObmVx88OZ0XGkAfb0PHr1t0hqzGUVR7fkDRXNiw';
+const SUPABASE_URL     = 'https://SEU_PROJETO.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
 // ============================================================
 
 const { createClient } = supabase;
@@ -448,6 +450,7 @@ const CATS = {
 };
 
 let currentType = 'expense';
+let editingId = null; // ID da transação sendo editada (null = nova)
 let currentDate = new Date();
 let transactions = [];
 let goals = [];
@@ -483,7 +486,7 @@ function setLoadingText(t) { document.getElementById('loading-text').textContent
 async function init() {
   setLoadingText('verificando sessão...');
   const { data:{ session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'index.html'; return; }
+  if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
 
   // Tenta carregar chave criptográfica da sessão
@@ -492,7 +495,7 @@ async function init() {
   if (!keyOk) {
     // Chave perdida (aba fechada / sessão expirada) — redireciona p/ re-login
     await sb.auth.signOut();
-    window.location.href = 'index.html?reason=relogin';
+    window.location.href = 'login.html?reason=relogin';
     return;
   }
 
@@ -513,7 +516,7 @@ async function init() {
 async function doLogout() {
   sessionStorage.removeItem('gc_ek');   // apaga chave da memória
   await sb.auth.signOut();
-  window.location.href = 'index.html';
+  window.location.href = 'login.html';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -540,6 +543,17 @@ async function addTransaction(tx) {
   if (error) { setSync('error'); toast('Erro ao salvar','error'); return null; }
   const dec = await decryptTx(data);
   transactions.unshift(dec);
+  setSync('ok');
+  return dec;
+}
+
+async function updateTransaction(id, tx) {
+  setSync('loading');
+  const enc = await encryptTx({...tx, user_id: currentUser.id});
+  const { data, error } = await sb.from('transactions').update(enc).eq('id', id).eq('user_id', currentUser.id).select().single();
+  if (error) { setSync('error'); toast('Erro ao atualizar','error'); return null; }
+  const dec = await decryptTx(data);
+  transactions = transactions.map(t => t.id === id ? dec : t);
   setSync('ok');
   return dec;
 }
@@ -587,11 +601,21 @@ function setType(type) {
   document.getElementById('btn-income').classList.toggle('active',  type==='income');
   document.getElementById('f-cat').innerHTML = CATS[currentType].map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
 }
-function openModal() {
-  setType('expense');
-  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('f-name').value  = '';
-  document.getElementById('f-amount').value = '';
+function openModal(prefillTx = null) {
+  editingId = prefillTx ? prefillTx.id : null;
+  document.getElementById('modal-title').textContent = editingId ? 'Editar transação' : 'Nova transação';
+  if (prefillTx) {
+    setType(prefillTx.type);
+    document.getElementById('f-name').value   = prefillTx.name;
+    document.getElementById('f-amount').value = prefillTx.amount;
+    document.getElementById('f-date').value   = prefillTx.date;
+    document.getElementById('f-cat').value    = prefillTx.cat;
+  } else {
+    setType('expense');
+    document.getElementById('f-date').value   = new Date().toISOString().split('T')[0];
+    document.getElementById('f-name').value   = '';
+    document.getElementById('f-amount').value = '';
+  }
   document.getElementById('modal-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('f-name').focus(), 100);
 }
@@ -604,8 +628,13 @@ async function saveTransaction() {
   const cat    = document.getElementById('f-cat').value;
   if (!name || !amount || amount<=0 || !date) { toast('Preencha todos os campos','error'); return; }
   closeModal();
-  const result = await addTransaction({name, amount, date, type:currentType, cat});
-  if (result) { renderAll(); renderAllTx(); toast('Salvo e criptografado ✓'); }
+  if (editingId) {
+    const result = await updateTransaction(editingId, {name, amount, date, type:currentType, cat});
+    if (result) { renderAll(); renderAllTx(); toast('Transação atualizada ✓'); }
+  } else {
+    const result = await addTransaction({name, amount, date, type:currentType, cat});
+    if (result) { renderAll(); renderAllTx(); toast('Salvo e criptografado ✓'); }
+  }
 }
 
 function openGoalModal() {
@@ -672,7 +701,10 @@ function txHTML(t, showDelete=true) {
     <div class="tx-icon" style="background:${cat.color}22">${cat.icon}</div>
     <div class="tx-info"><div class="tx-name">${t.name}</div><div class="tx-meta">${cat.label} · ${ds}</div></div>
     <span class="tx-amount ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</span>
-    ${showDelete?`<button class="tx-delete" onclick="deleteTx('${t.id}')" title="Remover"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>`:''}
+    ${showDelete?`
+      <button class="tx-edit" onclick="editTx('${t.id}')" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="tx-delete" onclick="deleteTx('${t.id}')" title="Remover"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+    `:''}
   </li>`;
 }
 
@@ -686,6 +718,11 @@ function renderAllTx() {
   const el = document.getElementById('all-tx-list');
   const txs = getFilteredTx().sort((a,b)=>b.date.localeCompare(a.date));
   el.innerHTML = txs.length ? txs.map(t=>txHTML(t,true)).join('') : `<li class="empty"><div class="empty-icon">📭</div><p>Nenhuma transação este mês</p></li>`;
+}
+
+function editTx(id) {
+  const tx = transactions.find(t => t.id === id);
+  if (tx) openModal(tx);
 }
 
 async function deleteTx(id) { await removeTransaction(id); renderAll(); renderAllTx(); toast('Transação removida'); }
