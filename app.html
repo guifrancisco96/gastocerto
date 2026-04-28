@@ -19,6 +19,29 @@
     --font-display:'Syne',sans-serif; --font-mono:'DM Mono',monospace;
     --r:12px; --r-lg:18px;
   }
+  /* LIGHT THEME */
+  body.light {
+    --bg:#f0f2f5; --surface:#ffffff; --surface2:#f0f2f5;
+    --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+    --text:#111214; --muted:#6b7280;
+    --accent:#5a7f00; --accent-dim:rgba(90,127,0,0.1); --accent-dim2:rgba(90,127,0,0.05);
+    --red:#dc2626; --red-dim:rgba(220,38,38,0.1);
+    --blue:#2563eb; --purple:#7c3aed; --orange:#d97706; --teal:#0d9488;
+  }
+  body.light .summary-value.income { color:#5a7f00; }
+  body.light .summary-value.balance { color:#2563eb; }
+  body.light .loading-bar-inner { background:#5a7f00; }
+  body.light .btn-primary { background:#5a7f00; color:#fff; }
+  body.light .btn-primary:hover { background:#4a6a00; }
+  body.light .logo-mark { background:#5a7f00; }
+  body.light .user-avatar { background:rgba(90,127,0,0.1); color:#5a7f00; border-color:rgba(90,127,0,0.2); }
+  body.light .nav-item.active { color:#5a7f00; }
+  body.light .nav-item.active::before { background:#5a7f00; }
+  body.light .sync-dot { background:#5a7f00; }
+  body.light .filter-active { border-color:rgba(90,127,0,0.4) !important; color:#5a7f00 !important; background:rgba(90,127,0,0.05) !important; }
+  body.light .type-btn.income.active { background:rgba(90,127,0,0.1); color:#5a7f00; border-color:rgba(90,127,0,0.3); }
+  body.light .toggle-switch input:checked + .toggle-slider { background:rgba(90,127,0,0.1); border-color:rgba(90,127,0,0.4); }
+  body.light .toggle-switch input:checked + .toggle-slider::before { background:#5a7f00; }
   body { background:var(--bg); color:var(--text); font-family:var(--font-display); min-height:100vh; display:flex; }
 
   #loading-screen { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:16px; }
@@ -252,6 +275,10 @@
     <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     Perfil
   </div>
+  <div class="nav-item" onclick="switchView('configuracoes')">
+    <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Configurações
+  </div>
   <div class="sidebar-footer">
     <div class="user-area">
       <div class="user-avatar" id="user-avatar">?</div>
@@ -378,6 +405,80 @@
     <div class="view" id="view-metas">
       <div class="section-header"><span class="section-title">Metas financeiras</span><button class="btn btn-primary" onclick="openGoalModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Nova meta</button></div>
       <div class="goals-grid" id="goals-grid"></div>
+    </div>
+
+    <!-- CONFIGURAÇÕES -->
+    <div class="view" id="view-configuracoes">
+      <div class="section-header"><span class="section-title">Configurações</span></div>
+      <div class="profile-grid">
+
+        <!-- TEMA -->
+        <div class="profile-card" style="grid-column:1/-1">
+          <div class="profile-card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Tema do aplicativo
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div id="theme-dark-card" onclick="setTheme('dark')" style="cursor:pointer;border:2px solid var(--accent);border-radius:var(--r-lg);overflow:hidden;transition:all 0.2s">
+              <div style="background:#0e0f11;padding:16px">
+                <div style="background:#16181c;border-radius:8px;padding:12px;margin-bottom:8px">
+                  <div style="width:60%;height:8px;background:#c8f135;border-radius:4px;margin-bottom:6px"></div>
+                  <div style="width:40%;height:6px;background:#2a2d35;border-radius:4px"></div>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <div style="flex:1;height:32px;background:#1e2026;border-radius:6px"></div>
+                  <div style="flex:1;height:32px;background:#1e2026;border-radius:6px"></div>
+                </div>
+              </div>
+              <div style="background:#16181c;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+                <span style="color:#f0f0f0;font-size:13px;font-weight:600">🌙 Escuro</span>
+                <span id="theme-dark-check" style="color:#c8f135;font-size:16px">✓</span>
+              </div>
+            </div>
+
+            <div id="theme-light-card" onclick="setTheme('light')" style="cursor:pointer;border:2px solid var(--border2);border-radius:var(--r-lg);overflow:hidden;transition:all 0.2s">
+              <div style="background:#f0f2f5;padding:16px">
+                <div style="background:#ffffff;border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
+                  <div style="width:60%;height:8px;background:#5a7f00;border-radius:4px;margin-bottom:6px"></div>
+                  <div style="width:40%;height:6px;background:#e5e7eb;border-radius:4px"></div>
+                </div>
+                <div style="display:flex;gap:6px">
+                  <div style="flex:1;height:32px;background:#ffffff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.06)"></div>
+                  <div style="flex:1;height:32px;background:#ffffff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.06)"></div>
+                </div>
+              </div>
+              <div style="background:#ffffff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e5e7eb">
+                <span style="color:#111214;font-size:13px;font-weight:600">☀️ Claro</span>
+                <span id="theme-light-check" style="color:#5a7f00;font-size:16px;display:none">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALTERAR EMAIL -->
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Alterar e-mail
+          </div>
+          <div class="form-group"><label class="form-label">Novo e-mail</label><input class="form-input" id="new-email" type="email" placeholder="novo@email.com"></div>
+          <button class="btn btn-primary" onclick="changeEmail()" style="width:100%">Atualizar e-mail</button>
+          <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">Um e-mail de confirmação será enviado para o novo endereço.</p>
+        </div>
+
+        <!-- ALTERAR SENHA -->
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Alterar senha
+          </div>
+          <div class="form-group"><label class="form-label">Nova senha</label><input class="form-input" id="new-password" type="password" placeholder="mínimo 8 caracteres"></div>
+          <div class="form-group"><label class="form-label">Confirmar nova senha</label><input class="form-input" id="confirm-password" type="password" placeholder="repita a senha"></div>
+          <button class="btn btn-primary" onclick="changePassword()" style="width:100%">Atualizar senha</button>
+          <p style="font-size:11px;color:var(--orange);margin-top:10px;line-height:1.5">⚠️ Ao trocar a senha, seus dados criptografados só poderão ser lidos com a nova senha. Faça logout e login novamente após a troca.</p>
+        </div>
+
+      </div>
     </div>
 
     <!-- PERFIL -->
@@ -628,6 +729,7 @@ const CATS = {
     {id:'taxas',        label:'Taxas e impostos',  icon:'🏦', color:'#636e72'},
     {id:'pets',         label:'Pets',              icon:'🐾', color:'#e17055'},
     {id:'viagem',       label:'Viagem',            icon:'✈️', color:'#00cec9'},
+    {id:'eletronicos',  label:'Eletrônicos',       icon:'💻', color:'#0984e3'},
     {id:'beleza',       label:'Beleza/Cuidados',   icon:'💄', color:'#fd79a8'},
     {id:'outros',       label:'Outros',            icon:'📦', color:'#7a7f8a'},
   ],
@@ -726,6 +828,49 @@ async function decryptRecur(row) {
 }
 
 // ═══ INIT ══════════════════════════════════════════════════
+// ═══ THEME ════════════════════════════════════════════════
+function setTheme(theme) {
+  document.body.classList.toggle('light', theme==='light');
+  localStorage.setItem('gc_theme', theme);
+  // Update theme cards
+  const darkCard = document.getElementById('theme-dark-card');
+  const lightCard = document.getElementById('theme-light-card');
+  const darkCheck = document.getElementById('theme-dark-check');
+  const lightCheck = document.getElementById('theme-light-check');
+  if (darkCard && lightCard) {
+    darkCard.style.borderColor  = theme==='dark'  ? 'var(--accent)' : 'var(--border2)';
+    lightCard.style.borderColor = theme==='light' ? '#5a7f00'       : 'var(--border2)';
+    if(darkCheck)  darkCheck.style.display  = theme==='dark'  ? 'inline' : 'none';
+    if(lightCheck) lightCheck.style.display = theme==='light' ? 'inline' : 'none';
+  }
+}
+function loadTheme() {
+  const saved = localStorage.getItem('gc_theme') || 'dark';
+  setTheme(saved);
+}
+
+// ═══ EMAIL / PASSWORD ══════════════════════════════════════
+async function changeEmail() {
+  const email = document.getElementById('new-email').value.trim();
+  if (!email) { toast('Digite o novo e-mail','error'); return; }
+  const {error} = await sb.auth.updateUser({ email });
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  document.getElementById('new-email').value = '';
+  toast('Confirmação enviada para o novo e-mail!');
+}
+
+async function changePassword() {
+  const pass    = document.getElementById('new-password').value;
+  const confirm = document.getElementById('confirm-password').value;
+  if (!pass || pass.length < 8) { toast('A senha precisa ter ao menos 8 caracteres','error'); return; }
+  if (pass !== confirm) { toast('As senhas não coincidem','error'); return; }
+  const {error} = await sb.auth.updateUser({ password: pass });
+  if (error) { toast('Erro: '+error.message,'error'); return; }
+  document.getElementById('new-password').value = '';
+  document.getElementById('confirm-password').value = '';
+  toast('Senha atualizada! Faça logout e login novamente.');
+}
+
 async function init() {
   setLoadingText('verificando sessão...');
   const { data:{session} } = await sb.auth.getSession();
@@ -749,6 +894,7 @@ async function init() {
   await applyRecurrings();
   populateFilterDropdowns();
 
+  loadTheme();
   document.getElementById('loading-screen').style.display='none';
   updateMonthUI(); renderAll();
 }
@@ -1072,19 +1218,20 @@ function switchView(v) {
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
-  const titles={dashboard:'Dashboard',transacoes:'Transações',recorrentes:'Recorrentes',metas:'Metas financeiras',perfil:'Perfil'};
+  const titles={dashboard:'Dashboard',transacoes:'Transações',recorrentes:'Recorrentes',metas:'Metas financeiras',perfil:'Perfil',configuracoes:'Configurações'};
   document.getElementById('topbar-title').textContent=titles[v];
   document.querySelectorAll('.nav-item').forEach(el=>{if(el.getAttribute('onclick')?.includes(`'${v}'`))el.classList.add('active');});
   const showMonth=['dashboard','transacoes'].includes(v);
   document.getElementById('month-nav-area').style.display=showMonth?'flex':'none';
   const ctaEl=document.getElementById('topbar-cta');
-  const ctaMap={dashboard:'Nova transação',transacoes:'Nova transação',recorrentes:'Nova recorrente',metas:'Nova meta',perfil:''};
+  const ctaMap={dashboard:'Nova transação',transacoes:'Nova transação',recorrentes:'Nova recorrente',metas:'Nova meta',perfil:'',configuracoes:''};
   if(ctaMap[v]){ctaEl.style.display='inline-flex';ctaEl.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>${ctaMap[v]}`;ctaEl.onclick=v==='metas'?openGoalModal:v==='recorrentes'?openRecurModal:openModal;}
   else ctaEl.style.display='none';
   if(v==='metas') renderGoals();
   if(v==='transacoes'){renderAllTx();applyFilters();}
   if(v==='recorrentes') renderRecurrings();
   if(v==='perfil') renderProfile();
+  if(v==='configuracoes') { const t=localStorage.getItem('gc_theme')||'dark'; setTheme(t); }
 }
 
 // ═══ PDF EXPORT ═══════════════════════════════════════════
