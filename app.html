@@ -1082,10 +1082,13 @@ function updateMonthUI(){document.getElementById('month-label').textContent=getM
 
 // ── MODAL TRANSACTION ────────────────────────────────────────
 function setType(type){
-  currentType=type;
-  document.getElementById('btn-expense').classList.toggle('active',type==='expense');
-  document.getElementById('btn-income').classList.toggle('active',type==='income');
-  document.getElementById('f-cat').innerHTML=CATS[currentType].map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
+  currentType=type||'expense';
+  const btnE=document.getElementById('btn-expense');
+  const btnI=document.getElementById('btn-income');
+  const fcat=document.getElementById('f-cat');
+  if(btnE) btnE.classList.toggle('active',currentType==='expense');
+  if(btnI) btnI.classList.toggle('active',currentType==='income');
+  if(fcat && CATS[currentType]) fcat.innerHTML=CATS[currentType].map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
 }
 function openModal(prefillTx=null){
   editingId=prefillTx?.id||null;
@@ -1119,7 +1122,10 @@ function openModal(prefillTx=null){
     document.getElementById('f-amount').value='';
   }
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f-name').focus(),150);
+  setTimeout(()=>{
+    setType(currentType);
+    document.getElementById('f-name').focus();
+  },50);
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 function onPaymentChange(){const p=document.getElementById('f-payment').value;document.getElementById('card-fields').classList.toggle('show',p==='cartao');if(p!=='cartao')document.getElementById('installment-fields').classList.remove('show');onCardTypeChange();}
